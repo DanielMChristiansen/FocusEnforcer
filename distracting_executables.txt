@@ -1,0 +1,3 @@
+Minecraft.Windows.exe
+Feather Launcher.exe
+BeamNG.drive.
