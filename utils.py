@@ -2,8 +2,19 @@ import subprocess
 import re
 import sys
 import os
-import tkinter
 from tkinter import messagebox, Tk
+
+import win32process
+
+
+def get_executable(hwnd):
+    # Get the windows process ID
+    _, process_id = win32process.GetWindowThreadProcessId(hwnd)
+    # Loop over running processes to find the one with the same process ID
+    for process in get_running_processes():
+        if int(process["pid"]) == process_id:
+            return process["image"]
+
 
 def get_running_processes() -> list[dict]:
     tasks_output = subprocess.check_output(['tasklist']).splitlines()
@@ -26,7 +37,6 @@ def popup(window_name: str):
     # Create a popup window
     root = Tk()
     root.withdraw()
-    messagebox.showinfo("Focus Enforcer", f"You're supposed to be focusing! Instead, you tried to open {window_name}", detail="Get back to work!", icon=messagebox.WARNING)
+    messagebox.showinfo("Focus Enforcer", f"You're supposed to be focusing! Instead, you tried to open {window_name}",
+                        detail="Get back to work!", icon=messagebox.WARNING)
     root.destroy()
-
-

@@ -19,26 +19,37 @@ def close_window(hwnd):
 
 
 def is_distracting_executable(hwnd):
-    # Get the windows process ID
-    _, process_id = win32process.GetWindowThreadProcessId(hwnd)
-    # Loop over running processes to find the one with the same process ID
-    for process in utils.get_running_processes():
-        if int(process["pid"]) == process_id:
-            process_executable: str = process["image"]
-            print(process_executable)
-            # Read file for list of distracting apps
-            with open("distracting_executables.txt") as file:
-                for line in file.readlines():
-                    if line.strip() in process_executable:
-                        return True
+    executable_name = utils.get_executable(hwnd)
+    with open("distracting_executables.txt") as file:
+        for line in file.readlines():
+            if line.strip() in executable_name:
+                return True
     return False
+
+
+def is_distracting_window_title(hwnd):
+    window_text = win32gui.GetWindowText(hwnd)
+    with open("distracting_window_titles.txt") as file:
+        for line in file.readlines():
+            if line.strip() in window_text:
+                return True
+    return
 
 
 def is_distracting_process(hwnd) -> bool:
     window_text = win32gui.GetWindowText(hwnd)
 
+    if is_distracting_window_title(hwnd): return True
     if is_distracting_executable(hwnd): return True
 
+    # A java window may be another process, so we need to check the window text
+    # Also, a window with Minecraft in the title may not always be the game
+    # If it is both a java window and has Minecraft in the title, it is likely the game
+    if utils.get_executable(hwnd) == "javaw.exe":
+        with open("minecraft_titles.txt") as file:
+            for line in file.readlines():
+                if line.strip() in window_text:
+                    return True
     return False
 
 
